@@ -1,8 +1,6 @@
 const AdminAuthService = require('@services/AdminAuthService');
 const RBACService = require('@services/RBACService');
 const UploadService = require('@services/UploadService');
-const path = require('path');
-const fs = require('fs').promises;
 const logger = require('@utils/logger');
 
 /**
@@ -147,16 +145,11 @@ class AdminController {
 
       // Delete old avatar if exists
       if (admin.avatar) {
-        const oldAvatarPath = path.join(process.cwd(), admin.avatar.replace(/^\//, ''));
-        try {
-          await fs.unlink(oldAvatarPath);
-        } catch (error) {
-          logger.warn('Failed to delete old avatar:', error);
-        }
+        UploadService.deleteFileByUrl(admin.avatar);
       }
 
-      // Update avatar URL
-      const avatarUrl = `/uploads/admins/${path.basename(req.file.path)}`;
+      // Get proper file URL with full path (includes subdirectories)
+      const avatarUrl = `/${req.file.path.replace(/\\/g, '/')}`;
       await AdminAuthService.updateProfile(adminId, { avatar: avatarUrl });
 
       res.json({
@@ -166,6 +159,10 @@ class AdminController {
         data: { avatarUrl }
       });
     } catch (error) {
+      // Clean up file on error
+      if (req.file) {
+        UploadService.cleanupFiles(req.file);
+      }
       next(error);
     }
   }
