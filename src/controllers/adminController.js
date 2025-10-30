@@ -32,6 +32,7 @@ class AdminController {
         data: result
       });
     } catch (error) {
+      logger.error('Admin login error:', error);
       next(error);
     }
   }
