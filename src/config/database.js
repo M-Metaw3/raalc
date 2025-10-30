@@ -2,9 +2,9 @@ module.exports = {
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT) || 3306,
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'raalc_db',
+  username: process.env.DB_USER || 'raalc2026',
+  password: process.env.DB_PASSWORD || 'Secur3P@ssw0rd!',
+  database: process.env.DB_NAME || 'raalc2026',
   entities: ['src/models/**/*.js'],
   migrations: ['src/migrations/**/*.js'],
   synchronize: process.env.NODE_ENV !== 'production', // Never in production!
