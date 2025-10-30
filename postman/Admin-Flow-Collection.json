@@ -1,0 +1,741 @@
+{
+  "info": {
+    "name": "RAALC Admin API",
+    "_postman_id": "admin-flow-collection",
+    "description": "Complete Admin Flow with automatic token management.\n\n## Setup:\n1. Import this collection\n2. Create Environment with:\n   - `base_url`: http://localhost:4000\n3. Run requests in order - tokens will be saved automatically!\n\n## Features:\n- ✅ Auto token management\n- ✅ Auto save accessToken, refreshToken\n- ✅ Auto save admin IDs\n- ✅ Pre-request scripts for authentication\n- ✅ Test scripts for validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newAdminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newAdminId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testRoleId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1️⃣ Authentication",
+      "item": [
+        {
+          "name": "Super Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Save tokens automatically",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.data && response.data.tokens) {",
+                  "        pm.collectionVariables.set('accessToken', response.data.tokens.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', response.data.tokens.refreshToken);",
+                  "        console.log('✅ Tokens saved successfully!');",
+                  "    }",
+                  "    ",
+                  "    pm.test('Status code is 200', function () {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Response has tokens', function () {",
+                  "        pm.expect(response.data.tokens).to.have.property('accessToken');",
+                  "        pm.expect(response.data.tokens).to.have.property('refreshToken');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@raalc.com\",\n  \"password\": \"SuperAdmin@123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "login"]
+            },
+            "description": "Login as Super Admin. Tokens will be saved automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.data && response.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                  "        console.log('✅ Access token refreshed!');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/refresh-token",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "refresh-token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2️⃣ Admin Management",
+      "item": [
+        {
+          "name": "Create New Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.data && response.data.admin) {",
+                  "        pm.collectionVariables.set('newAdminId', response.data.admin.id);",
+                  "        console.log('✅ New admin ID saved: ' + response.data.admin.id);",
+                  "    }",
+                  "    ",
+                  "    pm.test('Admin created successfully', function () {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique email",
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('uniqueEmail', `newadmin${timestamp}@raalc.com`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"New Admin User\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"phone\": \"0501234567\",\n  \"password\": \"Admin@123456\",\n  \"confirmPassword\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins"]
+            },
+            "description": "Create new admin (Super Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Admins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Admin By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Admin Name\",\n  \"phone\": \"0509876543\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}", "deactivate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivate Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}", "activate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3️⃣ Profile Management",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Profile Name\",\n  \"phone\": \"0501111111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SuperAdmin@123!\",\n  \"newPassword\": \"NewPassword@123!\",\n  \"confirmPassword\": \"NewPassword@123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "change-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Avatar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "avatar"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4️⃣ Role Management",
+      "item": [
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.data && response.data.role) {",
+                  "        pm.collectionVariables.set('testRoleId', response.data.role.id);",
+                  "        console.log('✅ Role ID saved: ' + response.data.role.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique role name",
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('uniqueRoleName', `Test Role ${timestamp}`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{uniqueRoleName}}\",\n  \"description\": \"Test role created via Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Test Role\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5️⃣ Permission Management",
+      "item": [
+        {
+          "name": "Get All Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "permissions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Permissions to Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [1, 2, 3, 4, 5]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}", "permissions"]
+            },
+            "description": "Assign multiple permissions to a role"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Permission from Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}/permissions/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}", "permissions", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rbac/roles/{{testRoleId}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rbac", "roles", "{{testRoleId}}", "permissions"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6️⃣ Role Assignment",
+      "item": [
+        {
+          "name": "Assign Roles to Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleIds\": [2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}", "roles"]
+            },
+            "description": "Assign multiple roles to admin. Role IDs:\n- 1: Super Admin\n- 2: Admin\n- 3: Moderator\n- 4: Content Manager\n- 5: Support"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Admin Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}", "roles"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Role from Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/{{newAdminId}}/roles/3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "{{newAdminId}}", "roles", "3"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7️⃣ Test New Admin Access",
+      "item": [
+        {
+          "name": "Login as New Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.data && response.data.tokens) {",
+                  "        pm.collectionVariables.set('newAdminAccessToken', response.data.tokens.accessToken);",
+                  "        console.log('✅ New admin token saved!');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admins/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Admin - Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{newAdminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Admin - List Admins (Test Permission)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{newAdminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admins",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admins"]
+            },
+            "description": "Test if new admin has permission to list admins"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

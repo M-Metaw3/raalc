@@ -1,0 +1,870 @@
+{
+  "info": {
+    "name": "Agent CRUD - Complete",
+    "_postman_id": "agent-crud-complete-001",
+    "description": "Complete Agent CRUD operations including public registration, admin management, avatar uploads, and featured agents",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not exists",
+          "if (!pm.environment.get('baseURL')) {",
+          "    pm.environment.set('baseURL', 'http://localhost:4000/api');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Has access token', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.tokens.accessToken).to.exist;",
+                  "    pm.environment.set('adminToken', json.data.tokens.accessToken);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@raalc.com\",\n  \"password\": \"SuperAdmin@123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/admins/login",
+              "host": ["{{baseURL}}"],
+              "path": ["admins", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Departments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.data.departments.length > 0) {",
+                  "    pm.environment.set('departmentId', json.data.departments[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/admins/departments",
+              "host": ["{{baseURL}}"],
+              "path": ["admins", "departments"]
+            }
+          }
+        },
+        {
+          "name": "Get Shifts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.data.shifts.length > 0) {",
+                  "    pm.environment.set('shiftId', json.data.shifts[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/admins/shifts",
+              "host": ["{{baseURL}}"],
+              "path": ["admins", "shifts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Registration",
+      "item": [
+        {
+          "name": "Register Agent (Public)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('publicAgentEmail', `agent_public_${timestamp}@test.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('publicAgentId', json.data.agent.id);",
+                  "pm.test('Agent requires approval', () => {",
+                  "    pm.expect(json.data.agent.isActive).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Test Agent Public\",\n  \"email\": \"{{publicAgentEmail}}\",\n  \"phone\": \"0501234567\",\n  \"password\": \"Agent@123456\",\n  \"confirmPassword\": \"Agent@123456\",\n  \"licenseNumber\": \"LIC-12345\",\n  \"agencyName\": \"Test Agency\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/register",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "register"]
+            }
+          }
+        },
+        {
+          "name": "Approve Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/{{publicAgentId}}/approve",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{publicAgentId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Agent Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('agentToken', json.data.tokens.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{publicAgentEmail}}\",\n  \"password\": \"Agent@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/login",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agent Self-Service",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/me",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Test Agent Updated\",\n  \"licenseNumber\": \"LIC-UPDATED\",\n  \"agencyName\": \"Updated Agency\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/profile",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Upload Avatar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Has avatar URL', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.agent.avatar).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select an image file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/avatar",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "avatar"]
+            },
+            "description": "Upload agent avatar (image file)"
+          }
+        },
+        {
+          "name": "Delete Avatar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/avatar",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "avatar"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Agent@123456\",\n  \"newPassword\": \"NewAgent@123456\",\n  \"confirmPassword\": \"NewAgent@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/change-password",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "change-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Management",
+      "item": [
+        {
+          "name": "Create Agent (Admin)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('adminCreatedEmail', `agent_admin_${timestamp}@test.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('adminCreatedId', json.data.agent.id);",
+                  "pm.test('Agent auto-approved', () => {",
+                  "    pm.expect(json.data.agent.isActive).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Admin Created Agent\",\n  \"email\": \"{{adminCreatedEmail}}\",\n  \"phone\": \"0509876543\",\n  \"password\": \"Agent@123456\",\n  \"shiftId\": {{shiftId}},\n  \"departmentId\": {{departmentId}},\n  \"licenseNumber\": \"LIC-ADMIN\",\n  \"agencyName\": \"Admin Agency\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/create",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "create"]
+            }
+          }
+        },
+        {
+          "name": "Update Agent (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Agent Updated by Admin\",\n  \"shiftId\": {{shiftId}},\n  \"departmentId\": {{departmentId}},\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/{{publicAgentId}}",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{publicAgentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Featured",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"featured\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/{{adminCreatedId}}/featured",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{adminCreatedId}}", "featured"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/{{publicAgentId}}/deactivate",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{publicAgentId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Activate Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/{{publicAgentId}}/activate",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{publicAgentId}}", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Reject Agent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Create agent to reject",
+                  "const timestamp = Date.now();",
+                  "const rejectEmail = `agent_reject_${timestamp}@test.com`;",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('baseURL') + '/agents/register',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            fullName: 'Agent To Reject',",
+                  "            email: rejectEmail,",
+                  "            phone: '0507777777',",
+                  "            password: 'Agent@123456',",
+                  "            confirmPassword: 'Agent@123456'",
+                  "        })",
+                  "    }",
+                  "}, (err, res) => {",
+                  "    if (!err && res.json().data.agent.id) {",
+                  "        pm.environment.set('rejectAgentId', res.json().data.agent.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Test rejection reason\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/agents/{{rejectAgentId}}/reject",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "{{rejectAgentId}}", "reject"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Queries & Lists",
+      "item": [
+        {
+          "name": "Get All Agents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Has pagination', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.pagination).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/list?page=1&limit=10&search=",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Agents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/pending",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "pending"]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Agents (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Only featured agents', () => {",
+                  "    const json = pm.response.json();",
+                  "    json.data.agents.forEach(agent => {",
+                  "        pm.expect(agent.featured).to.be.true;",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/featured?page=1&limit=10",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "featured"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Public endpoint - no auth required"
+          }
+        },
+        {
+          "name": "Search Agents by Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/agents/list?search=Test",
+              "host": ["{{baseURL}}"],
+              "path": ["agents", "list"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Test"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

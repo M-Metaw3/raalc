@@ -1,0 +1,985 @@
+{
+  "info": {
+    "name": "RAALC - Shift Management",
+    "_postman_id": "shift-management-collection",
+    "description": "Complete Shift Management API Collection - Agent Check-in/out, Break Requests, Admin Approvals",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "breakRequestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shiftId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "departmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Admin Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has tokens\", function () {",
+                  "    pm.expect(response.data).to.have.property('tokens');",
+                  "    pm.expect(response.data.tokens).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "// Save admin token",
+                  "if (response.data && response.data.tokens) {",
+                  "    pm.collectionVariables.set('adminToken', response.data.tokens.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', response.data.tokens.accessToken);",
+                  "    console.log('✅ Admin token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@raalc.com\",\n  \"password\": \"SuperAdmin@123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admins/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admins", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Setup Data",
+      "item": [
+        {
+          "name": "Get Departments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Save first department ID",
+                  "if (response.data && response.data.departments.length > 0) {",
+                  "    pm.collectionVariables.set('departmentId', response.data.departments[0].id);",
+                  "    console.log('✅ Department ID saved: ' + response.data.departments[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/departments",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "departments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shifts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Save first shift ID",
+                  "if (response.data && response.data.shifts.length > 0) {",
+                  "    pm.collectionVariables.set('shiftId', response.data.shifts[0].id);",
+                  "    console.log('✅ Shift ID saved: ' + response.data.shifts[0].id);",
+                  "    console.log('   Shift: ' + response.data.shifts[0].name + ' (' + response.data.shifts[0].startTime + '-' + response.data.shifts[0].endTime + ')');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shifts",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "shifts"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Agent Management",
+      "item": [
+        {
+          "name": "Create Agent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique email",
+                  "const timestamp = Date.now();",
+                  "const randomEmail = `agent_${timestamp}@test.com`;",
+                  "pm.collectionVariables.set('testAgentEmail', randomEmail);",
+                  "console.log('Generated email: ' + randomEmail);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Save agent ID",
+                  "if (response.data && response.data.agent) {",
+                  "    pm.collectionVariables.set('agentId', response.data.agent.id);",
+                  "    console.log('✅ Agent created with ID: ' + response.data.agent.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Agent\",\n  \"email\": \"{{testAgentEmail}}\",\n  \"phone\": \"0501234567\",\n  \"password\": \"Agent@123456\",\n  \"confirmPassword\": \"Agent@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Agent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('✅ Agent approved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Shift to Agent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('✅ Shift assigned to agent');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shiftId}},\n  \"departmentId\": {{departmentId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agent Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Save agent token",
+                  "if (response.data && response.data.tokens) {",
+                  "    pm.collectionVariables.set('agentToken', response.data.tokens.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', response.data.tokens.accessToken);",
+                  "    console.log('✅ Agent token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{testAgentEmail}}\",\n  \"password\": \"Agent@123456\",\n  \"deviceId\": \"test-device-123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Agent Shift Flow",
+      "item": [
+        {
+          "name": "Check-in",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Save session ID",
+                  "if (response.data && response.data.session) {",
+                  "    pm.collectionVariables.set('sessionId', response.data.session.id);",
+                  "    console.log('✅ Checked in - Session ID: ' + response.data.session.id);",
+                  "    console.log('   Status: ' + response.data.status);",
+                  "    if (response.data.lateMinutes > 0) {",
+                  "        console.log('   ⚠️ Late by ' + response.data.lateMinutes + ' minutes');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": {\n    \"lat\": 24.7136,\n    \"lng\": 46.6753\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/check-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "check-in"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📊 Session Status:');",
+                  "console.log('   Active: ' + response.data.hasActiveSession);",
+                  "console.log('   Status: ' + response.data.currentStatus);",
+                  "console.log('   Work Minutes: ' + response.data.todayStats.workMinutes);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/session/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "session", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Short Break",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200 or 201\", function () {",
+                  "    pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "// Save break request ID",
+                  "if (response.data && response.data.breakRequest) {",
+                  "    pm.collectionVariables.set('breakRequestId', response.data.breakRequest.id);",
+                  "    console.log('✅ Break requested - ID: ' + response.data.breakRequest.id);",
+                  "    console.log('   Status: ' + response.data.breakRequest.status);",
+                  "    console.log('   Auto-approved: ' + (response.data.breakRequest.autoApproved || false));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"short\",\n  \"requestedDuration\": 15,\n  \"reason\": \"Coffee break\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/break/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "break", "request"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End Break",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('✅ Break ended');",
+                  "if (response.data && response.data.actualDuration) {",
+                  "    console.log('   Duration: ' + response.data.actualDuration + ' minutes');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/break/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "break", "end"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Today's Breaks",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📊 Today\\'s Breaks: ' + response.data.count);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/breaks/today",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "breaks", "today"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Activity Logs",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📝 Activity Logs: ' + response.data.count);",
+                  "if (response.data.logs && response.data.logs.length > 0) {",
+                  "    console.log('   Last: ' + response.data.logs[0].type);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/activity-logs?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "activity-logs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check-out",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('✅ Checked out');",
+                  "if (response.data && response.data.summary) {",
+                  "    console.log('   Work: ' + response.data.summary.workMinutes + ' min');",
+                  "    console.log('   Breaks: ' + response.data.summary.numberOfBreaks);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/check-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "check-out"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session History",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use agent token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('agentToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📊 Session History:');",
+                  "console.log('   Sessions: ' + response.data.sessions.length);",
+                  "if (response.data.summary) {",
+                  "    console.log('   Total Work: ' + response.data.summary.totalWorkMinutes + ' min');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/sessions/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "sessions", "history"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Management",
+      "item": [
+        {
+          "name": "Get Pending Break Requests",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📋 Pending Requests: ' + response.data.count);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/break-requests/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "break-requests", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Break Request",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('✅ Break approved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Approved via Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/break-requests/{{breakRequestId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "break-requests", "{{breakRequestId}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Sessions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));",
+                  "",
+                  "// Set today's date",
+                  "const today = new Date().toISOString().split('T')[0];",
+                  "pm.collectionVariables.set('today', today);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📊 Sessions: ' + response.data.sessions.length);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/sessions?startDate={{today}}&endDate={{today}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "sessions"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{today}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{today}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dashboard Stats",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "console.log('📊 Dashboard Stats:');",
+                  "if (response.data && response.data.today) {",
+                  "    console.log('   Active: ' + response.data.today.activeAgents);",
+                  "    console.log('   Completed: ' + response.data.today.completed);",
+                  "}",
+                  "if (response.data && response.data.pendingApprovals !== undefined) {",
+                  "    console.log('   Pending: ' + response.data.pendingApprovals);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "dashboard", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+

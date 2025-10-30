@@ -1,0 +1,9 @@
+# Ignore all files in reports directory
+*
+
+# Except this .gitignore file
+!.gitignore
+
+# Newman generates HTML reports here
+# These should not be committed to git
+
