@@ -20,7 +20,7 @@ const initRedis = async () => {
     redisClient = redis.createClient({
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT) || 6379,
-      password: process.env.REDIS_PASSWORD || undefined,
+      password: process.env.REDIS_PASSWORD || "StrongRedisPass123!",
       db: parseInt(process.env.REDIS_DB) || 0,
       retry_strategy: (options) => {
         if (options.error && options.error.code === 'ECONNREFUSED') {
