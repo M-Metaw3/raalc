@@ -68,7 +68,8 @@ module.exports = new EntitySchema({
       comment: 'Minutes before meeting to block breaks'
     },
     allowedBreakTypes: {
-      type: 'text',
+      type: 'varchar',
+      length: 500,
       default: 'short,lunch,emergency',
       comment: 'Allowed break types: short, lunch, emergency',
       transformer: {
