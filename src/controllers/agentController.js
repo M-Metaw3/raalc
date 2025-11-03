@@ -15,11 +15,10 @@ class AgentController {
    */
   async register(req, res, next) {
     try {
-      const { firstName, lastName, email, password, phone, licenseNumber, agencyName } = req.body;
+      const { fullName, email, password, phone, licenseNumber, agencyName } = req.body;
 
       const result = await AgentService.register({
-        firstName,
-        lastName,
+        fullName,
         email,
         password,
         phone,
