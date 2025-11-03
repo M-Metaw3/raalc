@@ -192,6 +192,51 @@ class RBACService {
   }
 
   /**
+   * Remove a specific permission from role
+   * @param {number} roleId - Role ID
+   * @param {number} permissionId - Permission ID to remove
+   * @param {number} removedBy - Admin ID who removed
+   * @returns {Promise<Object>} Updated role with permissions
+   */
+  async removePermissionFromRole(roleId, permissionId, removedBy) {
+    try {
+      const role = await RoleRepository.findById(roleId);
+      if (!role) {
+        throw ErrorHandlers.notFound('Role not found');
+      }
+
+      // Check if permission exists
+      const permission = await PermissionRepository.findById(permissionId);
+      if (!permission) {
+        throw ErrorHandlers.notFound('Permission not found');
+      }
+
+      // Check if role has this permission
+      const rolePermissions = await RoleRepository.getPermissions(roleId);
+      const hasPermission = rolePermissions.some(p => p.id === permissionId);
+      
+      if (!hasPermission) {
+        throw ErrorHandlers.notFound('Role does not have this permission');
+      }
+
+      // Remove the specific permission
+      await RoleRepository.removePermissions(roleId, [permissionId]);
+      
+      logger.info(`Permission removed from role: ${role.name}`, {
+        roleId,
+        permissionId,
+        permissionName: permission.name,
+        removedBy
+      });
+      
+      return await this.getRoleWithPermissions(roleId);
+    } catch (error) {
+      logger.error('Error removing permission from role:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Create a new permission
    * @param {Object} permissionData - Permission data
    * @param {number} createdBy - Admin ID who created

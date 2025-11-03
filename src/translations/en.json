@@ -67,7 +67,6 @@
     "passwordResetSuccess": "Password reset successful.",
     "invalidResetToken": "Invalid or expired password reset token.",
     "agentRegistrationPending": "Agent registration successful. Your account is pending admin approval.",
-    "adminCreated": "Admin account created successfully.",
     "tokenRefreshed": "Access token refreshed successfully.",
     "passwordChanged": "Password changed successfully.",
     "emailVerified": "Email verified successfully.",
@@ -106,8 +105,10 @@
     "roleDeleted": "Role deleted successfully.",
     "rolesRetrieved": "Roles retrieved successfully.",
     "roleRetrieved": "Role retrieved successfully.",
+    "rolePermissionsRetrieved": "Role permissions retrieved successfully.",
     "permissionCreated": "Permission created successfully.",
-    "permissionsRetrieved": "Permissions retrieved successfully."
+    "permissionsRetrieved": "Permissions retrieved successfully.",
+    "permissionRemoved": "Permission removed from role successfully."
   },
   "upload": {
     "success": "File uploaded successfully.",
@@ -172,6 +173,7 @@
     "roleIdRequired": "Role ID is required.",
     "permissionIdsRequired": "Permission IDs are required.",
     "permissionIdsMinLength": "At least one permission must be provided.",
+    "permissionIdRequired": "Permission ID is required.",
     "invalidPermissionId": "Invalid permission ID.",
     "permissionNameRequired": "Permission name is required.",
     "permissionNameLength": "Permission name must be between 3 and 100 characters.",
@@ -245,9 +247,6 @@
     "featuredRetrieved": "Featured agents retrieved successfully.",
     "noAvatar": "Agent has no avatar to delete.",
     "notFound": "Agent not found."
-  },
-  "errors": {
-    "fileRequired": "File is required."
   }
 }
 

@@ -176,12 +176,34 @@ const permissionsQueryValidation = [
   validate
 ];
 
+/**
+ * Remove permission from role validation
+ */
+const removePermissionValidation = [
+  param('roleId')
+    .trim()
+    .notEmpty()
+    .withMessage('validation.roleIdRequired')
+    .isInt({ min: 1 })
+    .withMessage('validation.invalidRoleId'),
+
+  param('permissionId')
+    .trim()
+    .notEmpty()
+    .withMessage('validation.permissionIdRequired')
+    .isInt({ min: 1 })
+    .withMessage('validation.invalidPermissionId'),
+
+  validate
+];
+
 module.exports = {
   createRoleValidation,
   updateRoleValidation,
   roleIdValidation,
   assignPermissionsValidation,
   createPermissionValidation,
-  permissionsQueryValidation
+  permissionsQueryValidation,
+  removePermissionValidation
 };
 

@@ -13,7 +13,8 @@ const {
   roleIdValidation,
   assignPermissionsValidation,
   createPermissionValidation,
-  permissionsQueryValidation
+  permissionsQueryValidation,
+  removePermissionValidation
 } = require('@validators/rbacValidator');
 
 /**
@@ -111,6 +112,35 @@ router.post(
   canManagePermissions(),
   ...assignPermissionsValidation,
   rbacController.assignPermissions
+);
+
+/**
+ * @route   GET /api/rbac/roles/:id/permissions
+ * @desc    Get role permissions
+ * @access  Private - Requires 'permissions.list' permission
+ */
+router.get(
+  '/roles/:id/permissions',
+  authenticate,
+  authorize('ADMIN'),
+  requirePermission('permissions.list'),
+  ...roleIdValidation,
+  rbacController.getRolePermissions
+);
+
+/**
+ * @route   DELETE /api/rbac/roles/:roleId/permissions/:permissionId
+ * @desc    Remove a specific permission from role
+ * @access  Private - Super Admin or Admin with 'permissions.revoke' permission
+ */
+router.delete(
+  '/roles/:roleId/permissions/:permissionId',
+  authenticate,
+  authorize('ADMIN'),
+  canManagePermissions(),
+  requirePermission('permissions.revoke'),
+  ...removePermissionValidation,
+  rbacController.removePermission
 );
 
 // ============================================

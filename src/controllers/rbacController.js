@@ -137,6 +137,53 @@ class RBACController {
   }
 
   /**
+   * Get role permissions
+   * GET /api/rbac/roles/:id/permissions
+   */
+  async getRolePermissions(req, res, next) {
+    try {
+      const roleId = parseInt(req.params.id);
+      const role = await RBACService.getRoleWithPermissions(roleId);
+
+      res.json({
+        ok: true,
+        message: req.t('rbac.rolePermissionsRetrieved'),
+        messageKey: 'rbac.rolePermissionsRetrieved',
+        data: { 
+          roleId: role.id,
+          roleName: role.name,
+          permissions: role.permissions 
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Remove permission from role
+   * DELETE /api/rbac/roles/:roleId/permissions/:permissionId
+   */
+  async removePermission(req, res, next) {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const permissionId = parseInt(req.params.permissionId);
+      const removedBy = req.user.id;
+
+      const role = await RBACService.removePermissionFromRole(roleId, permissionId, removedBy);
+
+      res.json({
+        ok: true,
+        message: req.t('rbac.permissionRemoved'),
+        messageKey: 'rbac.permissionRemoved',
+        data: { role }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Get all permissions (grouped)
    * GET /api/rbac/permissions
    */
