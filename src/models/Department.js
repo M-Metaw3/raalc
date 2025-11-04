@@ -33,15 +33,26 @@ module.exports = new EntitySchema({
     },
     isActive: {
       type: 'boolean',
-      default: true
+      default: true,
+      nullable: false
     },
+    
+    // Soft Delete
+    deletedAt: {
+      type: 'datetime',
+      nullable: true,
+      comment: 'Soft delete timestamp'
+    },
+    
     createdAt: {
       type: 'datetime',
-      createDate: true
+      createDate: true,
+      nullable: false
     },
     updatedAt: {
       type: 'datetime',
-      updateDate: true
+      updateDate: true,
+      nullable: false
     }
   },
   relations: {
@@ -54,7 +65,28 @@ module.exports = new EntitySchema({
       type: 'one-to-many',
       target: 'Shift',
       inverseSide: 'department'
+    },
+    services: {
+      type: 'one-to-many',
+      target: 'Service',
+      inverseSide: 'department'
     }
-  }
+  },
+  indices: [
+    {
+      name: 'idx_departments_name',
+      columns: ['name'],
+      unique: true,
+      where: 'deleted_at IS NULL'
+    },
+    {
+      name: 'idx_departments_is_active',
+      columns: ['isActive']
+    },
+    {
+      name: 'idx_departments_deleted_at',
+      columns: ['deletedAt']
+    }
+  ]
 });
 

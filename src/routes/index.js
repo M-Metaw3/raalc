@@ -6,12 +6,16 @@ const adminRoutes = require('./adminRoutes');
 const userRoutes = require('./userRoutes');
 const agentRoutes = require('./agentRoutes');
 const rbacRoutes = require('./rbacRoutes');
+const departmentRoutes = require('./departmentRoutes');
+const serviceRoutes = require('./serviceRoutes');
 
 // Register routes
 router.use('/admins', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/agents', agentRoutes);
 router.use('/rbac', rbacRoutes);
+router.use('/departments', departmentRoutes);
+router.use('/services', serviceRoutes);
 
 // API version info
 router.get('/', (req, res) => {

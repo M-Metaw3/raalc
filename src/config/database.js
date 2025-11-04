@@ -12,6 +12,7 @@ const Permission = require('../models/Permission');
 const Report = require('../models/Report');
 const Role = require('../models/Role');
 const RolePermission = require('../models/RolePermission');
+const Service = require('../models/Service');
 const Shift = require('../models/Shift');
 const User = require('../models/User');
 const UserDocument = require('../models/UserDocument');
@@ -37,6 +38,7 @@ module.exports = {
     Report,
     Role,
     RolePermission,
+    Service,
     Shift,
     User,
     UserDocument

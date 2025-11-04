@@ -23,6 +23,7 @@
     "invalidDocumentType": "Invalid document type. Only PDF, Word, and Excel files are allowed.",
     "tooManyFiles": "Too many files. Maximum files limit exceeded.",
     "unexpectedField": "Unexpected file field.",
+    "uploadFailed": "File upload failed. Please try again.",
     "uploadLimitExceeded": "Upload limit exceeded.",
     "missingUserIdentifier": "User identifier (email or phone) is missing.",
     "otpExpired": "OTP has expired. Please request a new one.",
@@ -183,7 +184,22 @@
     "actionRequired": "Action is required.",
     "actionLength": "Action name must be between 2 and 50 characters.",
     "groupLength": "Group name must not exceed 50 characters.",
-    "invalidGroupBy": "Invalid groupBy value. Must be 'group' or 'resource'."
+    "invalidGroupBy": "Invalid groupBy value. Must be 'group' or 'resource'.",
+    "nameRequired": "Name is required.",
+    "nameLength": "Name must be between 2 and 100 characters.",
+    "nameEnglishOnly": "Name must contain only English letters, numbers, spaces, and hyphens.",
+    "priceRequired": "Price is required.",
+    "pricePositive": "Price must be greater than 0.",
+    "invalidPrice": "Invalid price format.",
+    "durationPositive": "Duration must be a positive number.",
+    "departmentIdRequired": "Department ID is required.",
+    "invalidDepartmentId": "Invalid department ID.",
+    "invalidId": "Invalid ID.",
+    "invalidPage": "Invalid page number.",
+    "invalidLimit": "Invalid limit value. Must be between 1 and 100.",
+    "invalidSortField": "Invalid sort field.",
+    "invalidSortOrder": "Invalid sort order. Must be ASC or DESC.",
+    "invalidBoolean": "Invalid boolean value."
   },
   "success": {
     "created": "Resource created successfully.",
@@ -247,6 +263,41 @@
     "featuredRetrieved": "Featured agents retrieved successfully.",
     "noAvatar": "Agent has no avatar to delete.",
     "notFound": "Agent not found."
+  },
+  "department": {
+    "created": "Department created successfully.",
+    "updated": "Department updated successfully.",
+    "deleted": "Department deleted successfully.",
+    "activated": "Department activated successfully.",
+    "deactivated": "Department deactivated successfully.",
+    "listRetrieved": "Departments list retrieved successfully.",
+    "retrieved": "Department retrieved successfully.",
+    "retrievedWithServices": "Department with services retrieved successfully.",
+    "statsRetrieved": "Department statistics retrieved successfully.",
+    "notFound": "Department not found.",
+    "nameAlreadyExists": "Department name already exists.",
+    "nameEnglishOnly": "Department name must contain only English letters, numbers, spaces, and hyphens.",
+    "alreadyActive": "Department is already active.",
+    "alreadyInactive": "Department is already inactive.",
+    "inactive": "Department is inactive.",
+    "deleteFailed": "Failed to delete department."
+  },
+  "service": {
+    "created": "Service created successfully.",
+    "updated": "Service updated successfully.",
+    "deleted": "Service deleted successfully.",
+    "activated": "Service activated successfully.",
+    "deactivated": "Service deactivated successfully.",
+    "imageUploaded": "Service image uploaded successfully.",
+    "listRetrieved": "Services list retrieved successfully.",
+    "retrieved": "Service retrieved successfully.",
+    "statsRetrieved": "Service statistics retrieved successfully.",
+    "notFound": "Service not found.",
+    "nameAlreadyExistsInDepartment": "Service name already exists in this department.",
+    "pricePositive": "Service price must be greater than 0.",
+    "alreadyActive": "Service is already active.",
+    "alreadyInactive": "Service is already inactive.",
+    "deleteFailed": "Failed to delete service."
   }
 }
 
