@@ -98,7 +98,7 @@ class AdminAuthService {
       const admin = await AdminRepository.create({
         ...adminData,
         password: hashedPassword,
-        isActive: adminData.isActive !== undefined ? adminData.isActive : false,
+        isActive: adminData.isActive !== undefined ? adminData.isActive : true,
         createdBy
       });
 
@@ -138,12 +138,17 @@ class AdminAuthService {
         }
       }
 
-      // Remove sensitive fields from update
-      delete updateData.password;
-      delete updateData.isActive;
-      delete updateData.createdBy;
+      // Whitelist allowed fields for profile updates
+      const allowedFields = ['firstName', 'lastName', 'email', 'phone', 'avatar'];
+      const filteredData = {};
+      
+      allowedFields.forEach(field => {
+        if (updateData[field] !== undefined) {
+          filteredData[field] = updateData[field];
+        }
+      });
 
-      const updatedAdmin = await AdminRepository.update(adminId, updateData);
+      const updatedAdmin = await AdminRepository.update(adminId, filteredData);
       
       logger.info(`Admin profile updated: ${updatedAdmin.email}`, { adminId });
 

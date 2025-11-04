@@ -1,4 +1,4 @@
-const { getRepository } = require('typeorm');
+const { getRepository, In } = require('typeorm');
 
 /**
  * Role Repository
@@ -132,7 +132,7 @@ class RoleRepository {
     
     const where = { roleId };
     if (permissionIds && permissionIds.length > 0) {
-      where.permissionId = permissionIds;
+      where.permissionId = In(permissionIds);
     }
     
     const result = await rolePermissionRepo.delete(where);

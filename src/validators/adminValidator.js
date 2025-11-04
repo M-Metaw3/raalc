@@ -98,6 +98,12 @@ const updateProfileValidation = [
     .isLength({ min: 2, max: 100 })
     .withMessage('validation.lastNameLength'),
 
+  body('email')
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage('validation.invalidEmail'),
+
   body('phone')
     .optional()
     .trim()
