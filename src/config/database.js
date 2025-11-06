@@ -1,9 +1,11 @@
 // Explicitly require all entity files to avoid glob pattern issues
 const ActivityLog = require('../models/ActivityLog');
+const AdditionalService = require('../models/AdditionalService');
 const Admin = require('../models/Admin');
 const AdminRole = require('../models/AdminRole');
 const Agent = require('../models/Agent');
 const AgentSession = require('../models/AgentSession');
+const ApplicationType = require('../models/ApplicationType');
 const Approval = require('../models/Approval');
 const BreakPolicy = require('../models/BreakPolicy');
 const BreakRequest = require('../models/BreakRequest');
@@ -22,14 +24,20 @@ module.exports = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT) || 3306,
   username: process.env.DB_USER || 'raalc2026',
+  // username: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'Secur3P@ssw0rd!',
+  // password: process.env.DB_PASSWORD || '',
+
   database: process.env.DB_NAME || 'raalc2026',
+  // database: process.env.DB_NAME || 'raalc_db',
   entities: [
     ActivityLog,
+    AdditionalService,
     Admin,
     AdminRole,
     Agent,
     AgentSession,
+    ApplicationType,
     Approval,
     BreakPolicy,
     BreakRequest,

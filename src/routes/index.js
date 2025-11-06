@@ -8,6 +8,8 @@ const agentRoutes = require('./agentRoutes');
 const rbacRoutes = require('./rbacRoutes');
 const departmentRoutes = require('./departmentRoutes');
 const serviceRoutes = require('./serviceRoutes');
+const applicationTypeRoutes = require('./applicationTypeRoutes');
+const additionalServiceRoutes = require('./additionalServiceRoutes');
 
 // Register routes
 router.use('/admins', adminRoutes);
@@ -16,6 +18,8 @@ router.use('/agents', agentRoutes);
 router.use('/rbac', rbacRoutes);
 router.use('/departments', departmentRoutes);
 router.use('/services', serviceRoutes);
+router.use('/application-types', applicationTypeRoutes);
+router.use('/additional-services', additionalServiceRoutes);
 
 // API version info
 router.get('/', (req, res) => {

@@ -119,6 +119,26 @@ const PERMISSIONS = {
     CREATE: 'create_departments',
     UPDATE: 'update_departments',
     DELETE: 'delete_departments'
+  },
+  
+  // Application Types Management
+  APPLICATION_TYPES: {
+    CREATE: 'application_types.create',
+    READ: 'application_types.read',
+    UPDATE: 'application_types.update',
+    DELETE: 'application_types.delete',
+    LIST: 'application_types.list',
+    VIEW: 'application_types.view'
+  },
+  
+  // Additional Services Management
+  ADDITIONAL_SERVICES: {
+    CREATE: 'additional_services.create',
+    READ: 'additional_services.read',
+    UPDATE: 'additional_services.update',
+    DELETE: 'additional_services.delete',
+    LIST: 'additional_services.list',
+    VIEW: 'additional_services.view'
   }
 };
 
@@ -155,7 +175,9 @@ const PERMISSION_GROUPS = {
   ROLE_PERMISSION_MANAGEMENT: 'Role & Permission Management',
   DOCUMENT_MANAGEMENT: 'Document Management',
   SYSTEM_MANAGEMENT: 'System Management',
-  REPORTING: 'Reporting & Analytics'
+  REPORTING: 'Reporting & Analytics',
+  APPLICATION_MANAGEMENT: 'Application Management',
+  SERVICE_MANAGEMENT: 'Service Management'
 };
 
 /**
@@ -170,7 +192,9 @@ const PERMISSION_TO_GROUP = {
   'documents.*': PERMISSION_GROUPS.DOCUMENT_MANAGEMENT,
   'settings.*': PERMISSION_GROUPS.SYSTEM_MANAGEMENT,
   'reports.*': PERMISSION_GROUPS.REPORTING,
-  'audit.*': PERMISSION_GROUPS.REPORTING
+  'audit.*': PERMISSION_GROUPS.REPORTING,
+  'application_types.*': PERMISSION_GROUPS.APPLICATION_MANAGEMENT,
+  'additional_services.*': PERMISSION_GROUPS.SERVICE_MANAGEMENT
 };
 
 /**
