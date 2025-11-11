@@ -165,27 +165,43 @@ class AgentRepository {
 
   /**
    * Find all agents with filtering
-   * @param {Object} filters - Filter criteria
-   * @param {number} page - Page number
-   * @param {number} limit - Items per page
-   * @returns {Promise<Object>} Paginated agents
+   * @param {Object} options - Options object
+   * @param {Object} options.where - Filter criteria (featured, isActive, etc.)
+   * @param {number} options.skip - Number of records to skip
+   * @param {number} options.limit - Number of records to return
+   * @param {Array} options.relations - Relations to load (e.g., ['department', 'shift'])
+   * @returns {Promise<Object>} Paginated agents with pagination info
    */
-  async findAll(filters = {}, page = 1, limit = 20) {
+  async findAll(options = {}) {
     const repository = this.getRepository();
-    const skip = (page - 1) * limit;
+    const { where = {}, skip = 0, limit = 20, relations = [] } = options;
     
     const query = repository.createQueryBuilder('agent')
       .where('agent.deletedAt IS NULL');
     
-    if (filters.isActive !== undefined) {
-      query.andWhere('agent.isActive = :isActive', { isActive: filters.isActive });
+    // Apply where filters
+    if (where.isActive !== undefined) {
+      query.andWhere('agent.isActive = :isActive', { isActive: where.isActive });
     }
     
-    if (filters.search) {
+    if (where.featured !== undefined) {
+      query.andWhere('agent.featured = :featured', { featured: where.featured });
+    }
+    
+    if (where.search) {
       query.andWhere(
         '(agent.fullName LIKE :search OR agent.email LIKE :search OR agent.agencyName LIKE :search)',
-        { search: `%${filters.search}%` }
+        { search: `%${where.search}%` }
       );
+    }
+    
+    // Load relations
+    if (relations.includes('department')) {
+      query.leftJoinAndSelect('agent.department', 'department');
+    }
+    
+    if (relations.includes('shift')) {
+      query.leftJoinAndSelect('agent.shift', 'shift');
     }
     
     const [agents, total] = await query
@@ -194,12 +210,16 @@ class AgentRepository {
       .take(limit)
       .getManyAndCount();
     
+    const currentPage = Math.floor(skip / limit) + 1;
+    
     return {
       data: agents,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
+      pagination: {
+        currentPage,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: limit
+      }
     };
   }
 

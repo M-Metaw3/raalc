@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const AgentRepository = require('@repositories/AgentRepository');
+const ShiftRepository = require('@repositories/ShiftRepository');
+const DepartmentRepository = require('@repositories/DepartmentRepository');
 const { ErrorHandlers } = require('@utils/ErrorHandler');
 const logger = require('@utils/logger');
 
@@ -33,6 +35,28 @@ class AgentService {
         throw ErrorHandlers.conflict('auth.emailAlreadyExists');
       }
 
+      // Validate shiftId if provided
+      if (agentData.shiftId) {
+        const shift = await ShiftRepository.findById(agentData.shiftId);
+        if (!shift) {
+          throw ErrorHandlers.badRequest('errors.shiftNotFound');
+        }
+        if (!shift.isActive) {
+          throw ErrorHandlers.badRequest('errors.shiftNotActive');
+        }
+      }
+
+      // Validate departmentId if provided
+      if (agentData.departmentId) {
+        const department = await DepartmentRepository.findById(agentData.departmentId);
+        if (!department) {
+          throw ErrorHandlers.badRequest('errors.departmentNotFound');
+        }
+        if (!department.isActive) {
+          throw ErrorHandlers.badRequest('errors.departmentNotActive');
+        }
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(agentData.password, this.saltRounds);
 
@@ -49,6 +73,8 @@ class AgentService {
         createdBy: agentData.createdBy || null,
         licenseNumber: agentData.licenseNumber || null,
         agencyName: agentData.agencyName || null,
+        shiftId: agentData.shiftId || null,
+        departmentId: agentData.departmentId || null,
         isActive: false,
         isEmailVerified: false,
         emailVerificationToken,
@@ -172,13 +198,18 @@ class AgentService {
 
   /**
    * Get all agents (Admin only)
-   * @param {Object} filters - Filters
+   * @param {Object} filters - Filters (isActive, search, etc.)
    * @param {number} page - Page number
    * @param {number} limit - Items per page
    * @returns {Promise<Object>} Paginated agents
    */
   async getAllAgents(filters, page, limit) {
-    return await AgentRepository.findAll(filters, page, limit);
+    const skip = (page - 1) * limit;
+    return await AgentRepository.findAll({
+      where: filters,
+      skip,
+      limit
+    });
   }
 
   /**

@@ -156,12 +156,7 @@ class AgentController {
         ok: true,
         data: {
           agents: result.data,
-          pagination: {
-            total: result.total,
-            page: result.page,
-            limit: result.limit,
-            totalPages: result.totalPages
-          }
+          pagination: result.pagination
         }
       });
     } catch (error) {
