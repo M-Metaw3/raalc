@@ -24,9 +24,10 @@ class AgentRepository {
    * Find agent by ID
    * @param {number} id - Agent ID
    * @param {boolean} includePassword - Whether to include password in result
+   * @param {Array} relations - Relations to load
    * @returns {Promise<Object|null>} Agent object or null
    */
-  async findById(id, includePassword = false) {
+  async findById(id, includePassword = false, relations = []) {
     const repository = this.getRepository();
     const query = repository.createQueryBuilder('agent')
       .where('agent.id = :id', { id })
@@ -34,6 +35,31 @@ class AgentRepository {
     
     if (includePassword) {
       query.addSelect('agent.password');
+    }
+    
+    // Load relations if specified
+    if (relations.includes('department')) {
+      query.leftJoinAndSelect('agent.department', 'department');
+    }
+    
+    if (relations.includes('shift')) {
+      query.leftJoinAndSelect('agent.shift', 'shift');
+    }
+    
+    if (relations.includes('sessions')) {
+      query.leftJoinAndSelect('agent.sessions', 'sessions');
+    }
+    
+    if (relations.includes('breakRequests')) {
+      query.leftJoinAndSelect('agent.breakRequests', 'breakRequests');
+    }
+    
+    if (relations.includes('activityLogs')) {
+      query.leftJoinAndSelect('agent.activityLogs', 'activityLogs');
+    }
+    
+    if (relations.includes('creator')) {
+      query.leftJoinAndSelect('agent.creator', 'creator');
     }
     
     return await query.getOne();

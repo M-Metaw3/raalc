@@ -135,6 +135,28 @@ class AgentController {
   }
 
   /**
+   * Get agent by ID with all details (Admin only)
+   * GET /api/agents/:id
+   * 
+   * @access Private - Admin only
+   */
+  async getAgentById(req, res, next) {
+    try {
+      const agentId = parseInt(req.params.id);
+      const result = await AgentService.getAgentDetails(agentId);
+
+      res.json({
+        ok: true,
+        message: req.t('agent.retrievedSuccessfully'),
+        messageKey: 'agent.retrievedSuccessfully',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Get all agents (Admin only)
    * GET /api/agents/list
    * 

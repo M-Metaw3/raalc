@@ -252,6 +252,19 @@ router.put(
 // ============================================
 
 /**
+ * @route   GET /api/agents/:id
+ * @desc    Get agent details with all relations
+ * @access  Private - Admin only with agents.read permission
+ */
+router.get(
+  '/:id',
+  authenticate,
+  authorize('ADMIN'),
+  requirePermission('agents.read'),
+  agentController.getAgentById
+);
+
+/**
  * @route   PUT /api/agents/:id
  * @desc    Update agent details (e.g., assign shift/department)
  * @access  Private - Admin only with agents.update permission

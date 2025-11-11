@@ -50,7 +50,11 @@
     "noDocumentsFound": "لم يتم العثور على مستندات.",
     "documentUploadFailed": "فشل تحميل المستند. يرجى المحاولة مرة أخرى.",
     "documentRetrievalFailed": "فشل استرجاع المستندات.",
-    "documentDeletionFailed": "فشل حذف المستند."
+    "documentDeletionFailed": "فشل حذف المستند.",
+    "shiftNotFound": "الشيفت غير موجود.",
+    "shiftNotActive": "الشيفت المحدد غير مفعل.",
+    "departmentNotFound": "القسم غير موجود.",
+    "departmentNotActive": "القسم المحدد غير مفعل."
   },
   "auth": {
     "tokenRequired": "رمز المصادقة مطلوب.",
@@ -285,6 +289,7 @@
   },
   "agent": {
     "createdSuccessfully": "تم إنشاء الوكيل بنجاح.",
+    "retrievedSuccessfully": "تم استرجاع تفاصيل الوكيل بنجاح.",
     "featuredUpdated": "تم تحديث حالة الوكيل المميز بنجاح.",
     "featuredRetrieved": "تم استرجاع الوكلاء المميزين بنجاح.",
     "noAvatar": "الوكيل ليس لديه صورة لحذفها.",

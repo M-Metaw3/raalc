@@ -50,7 +50,11 @@
     "noDocumentsFound": "No documents found.",
     "documentUploadFailed": "Document upload failed. Please try again.",
     "documentRetrievalFailed": "Failed to retrieve documents.",
-    "documentDeletionFailed": "Failed to delete document."
+    "documentDeletionFailed": "Failed to delete document.",
+    "shiftNotFound": "Shift not found.",
+    "shiftNotActive": "The selected shift is not active.",
+    "departmentNotFound": "Department not found.",
+    "departmentNotActive": "The selected department is not active."
   },
   "auth": {
     "tokenRequired": "Authentication token is required.",
@@ -241,8 +245,7 @@
     "statusInvalid": "Invalid status.",
     "pageInvalid": "Invalid page number.",
     "limitInvalid": "Invalid limit value. Must be between 1 and 100.",
-    "phoneLength": "Phone number must be between 8 and 20 characters.",
-    "fullNameLength": "Full name must be between 2 and 100 characters."
+    "phoneLength": "Phone number must be between 8 and 20 characters."
   },
   "success": {
     "created": "Resource created successfully.",
@@ -303,6 +306,7 @@
   },
   "agent": {
     "createdSuccessfully": "Agent created successfully.",
+    "retrievedSuccessfully": "Agent details retrieved successfully.",
     "featuredUpdated": "Agent featured status updated successfully.",
     "featuredRetrieved": "Featured agents retrieved successfully.",
     "noAvatar": "Agent has no avatar to delete.",

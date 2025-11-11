@@ -197,6 +197,43 @@ class AgentService {
   }
 
   /**
+   * Get agent by ID with all details (Admin only)
+   * @param {number} agentId - Agent ID
+   * @returns {Promise<Object>} Agent with all relations
+   */
+  async getAgentDetails(agentId) {
+    try {
+      const agent = await AgentRepository.findById(agentId, false, [
+        'department',
+        'shift',
+        'sessions',
+        'breakRequests',
+        'activityLogs',
+        'creator'
+      ]);
+
+      if (!agent) {
+        throw ErrorHandlers.notFound('errors.userNotFound');
+      }
+
+      // Remove sensitive fields from creator
+      if (agent.creator) {
+        delete agent.creator.password;
+      }
+
+      return {
+        agent: {
+          ...agent,
+          userType: 'AGENT'
+        }
+      };
+    } catch (error) {
+      logger.error('Get agent details error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all agents (Admin only)
    * @param {Object} filters - Filters (isActive, search, etc.)
    * @param {number} page - Page number
