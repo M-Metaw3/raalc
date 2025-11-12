@@ -33,6 +33,16 @@ class UserService {
    * @returns {Promise<Object>} Created user (unverified) with registerToken
    */
   async register(userData, returnOTP = false) {
+    const { getConnection } = require('typeorm');
+    const connection = getConnection();
+    
+    // Start transaction
+    const queryRunner = connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    let createdUser = null;
+    
     try {
       const { fullName, email, password, phone } = userData;
 
@@ -50,8 +60,8 @@ class UserService {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, this.saltRounds);
 
-      // Create user (inactive and unverified)
-      const user = await UserRepository.create({
+      // Create user within transaction (inactive and unverified)
+      createdUser = await queryRunner.manager.save('User', {
         fullName,
         email: email.toLowerCase(),
         password: hashedPassword,
@@ -61,43 +71,71 @@ class UserService {
         isPhoneVerified: false
       });
 
-      // Generate and store OTP
-      const { otp, result: otpResult } = await OTPService.generateAndStore(
-        'phone_verification', 
-        phone, 
-        returnOTP
-      );
+      // Generate and store OTP (if this fails, rollback user creation)
+      let otp, otpResult;
+      try {
+        const otpData = await OTPService.generateAndStore(
+          'phone_verification', 
+          phone, 
+          returnOTP
+        );
+        otp = otpData.otp;
+        otpResult = otpData.result;
+      } catch (otpError) {
+        logger.error('❌ OTP generation failed, rolling back user creation:', otpError);
+        // Rollback transaction
+        await queryRunner.rollbackTransaction();
+        throw ErrorHandlers.internal('errors.otpGenerationFailed');
+      }
 
+      // Commit transaction - user successfully created and OTP stored
+      await queryRunner.commitTransaction();
+      
       // Generate register token
       const registerToken = OTPTokenService.generateRegisterToken({
-        id: user.id,
-        phone: user.phone,
-        email: user.email
+        id: createdUser.id,
+        phone: createdUser.phone,
+        email: createdUser.email
       });
 
-      // Emit event to send OTP via SMS (immediate)
-      otpEventEmitter.emitOTPSend({
-        phone,
-        otp,
-        type: 'phone_verification',
-        userId: user.id,
-        email: user.email
-      });
+      // Emit event to send OTP via SMS (immediate) - after commit
+      try {
+        otpEventEmitter.emitOTPSend({
+          phone,
+          otp,
+          type: 'phone_verification',
+          userId: createdUser.id,
+          email: createdUser.email
+        });
+      } catch (smsError) {
+        // SMS send failure should not rollback registration
+        // User can request resend OTP later
+        logger.error('⚠️  SMS send failed (user still registered):', smsError);
+      }
 
       // Remove sensitive data
-      delete user.password;
+      delete createdUser.password;
 
-      logger.info(`User registered (pending verification): ${user.email}`);
+      logger.info(`✅ User registered successfully (pending verification): ${createdUser.email}`);
 
       return {
-        user: { ...user, userType: 'USER' },
+        user: { ...createdUser, userType: 'USER' },
         message: 'Registration successful. Please verify your phone number with the OTP sent.',
         registerToken,
         ...otpResult
       };
     } catch (error) {
+      // Rollback transaction if still active
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+        logger.error('❌ Transaction rolled back due to error');
+      }
+      
       logger.error('User registration error:', error);
       throw error;
+    } finally {
+      // Release query runner
+      await queryRunner.release();
     }
   }
 

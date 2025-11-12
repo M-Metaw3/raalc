@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const { promisify } = require('util');
 const logger = require('@utils/logger');
 const { ErrorHandlers } = require('@utils/ErrorHandler');
 
@@ -19,7 +18,7 @@ class OTPService {
   }
 
   /**
-   * Get Redis client with promisified methods
+   * Get Redis client (Redis v4 - already async)
    * @returns {Object} Redis client with async methods
    */
   getRedisClient() {
@@ -29,13 +28,14 @@ class OTPService {
     
     const redis = global.redis;
     
-    // Promisify Redis methods if not already done
-    if (!redis.getAsync) {
-      redis.getAsync = promisify(redis.get).bind(redis);
-      redis.setexAsync = promisify(redis.setex).bind(redis);
-      redis.delAsync = promisify(redis.del).bind(redis);
-      redis.ttlAsync = promisify(redis.ttl).bind(redis);
-      redis.incrAsync = promisify(redis.incr).bind(redis);
+    // Redis v4 methods are already promises, no need to promisify
+    // Add aliases for backward compatibility
+    if (!redis.setexAsync) {
+      redis.setexAsync = (key, seconds, value) => redis.setEx(key, seconds, value);
+      redis.getAsync = (key) => redis.get(key);
+      redis.delAsync = (key) => redis.del(key);
+      redis.ttlAsync = (key) => redis.ttl(key);
+      redis.incrAsync = (key) => redis.incr(key);
     }
     
     return redis;

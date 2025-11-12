@@ -12,9 +12,11 @@ const BreakRequest = require('../models/BreakRequest');
 const Department = require('../models/Department');
 const Permission = require('../models/Permission');
 const Report = require('../models/Report');
+const RequestDocument = require('../models/RequestDocument');
 const Role = require('../models/Role');
 const RolePermission = require('../models/RolePermission');
 const Service = require('../models/Service');
+const ServiceRequest = require('../models/ServiceRequest');
 const Shift = require('../models/Shift');
 const User = require('../models/User');
 const UserDocument = require('../models/UserDocument');
@@ -44,9 +46,11 @@ module.exports = {
     Department,
     Permission,
     Report,
+    RequestDocument,
     Role,
     RolePermission,
     Service,
+    ServiceRequest,
     Shift,
     User,
     UserDocument
