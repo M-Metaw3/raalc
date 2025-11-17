@@ -16,33 +16,37 @@ let redisClient = null;
  * Initialize Redis connection
  */
 const initRedis = async () => {
-  return new Promise((resolve, reject) => {
+  try {
+    const host = process.env.REDIS_HOST || 'localhost';
+    const port = parseInt(process.env.REDIS_PORT) || 6379;
+    const password = process.env.REDIS_PASSWORD || '';
+    const db = parseInt(process.env.REDIS_DB) || 0;
+
+    // Redis v4 uses URL format
+    let redisUrl = `redis://${host}:${port}/${db}`;
+    if (password && password.trim() !== '') {
+      redisUrl = `redis://:${password}@${host}:${port}/${db}`;
+    }
+
+    logger.info(`🔄 Connecting to Redis at ${host}:${port}...`);
+    
+    // Create client with v4 syntax
     redisClient = redis.createClient({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT) || 6379,
-      password: process.env.REDIS_PASSWORD || "StrongRedisPass123!",
-      db: parseInt(process.env.REDIS_DB) || 0,
-      retry_strategy: (options) => {
-        if (options.error && options.error.code === 'ECONNREFUSED') {
-          logger.error('Redis connection refused');
-          return new Error('Redis server refused connection');
+      url: redisUrl,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 3) {
+            logger.error('Redis max retry attempts reached');
+            return new Error('Max retries reached');
+          }
+          return Math.min(retries * 100, 1000);
         }
-        if (options.total_retry_time > 1000 * 60 * 60) {
-          logger.error('Redis retry time exhausted');
-          return new Error('Retry time exhausted');
-        }
-        if (options.attempt > 10) {
-          logger.error('Redis max retry attempts reached');
-          return undefined;
-        }
-        // Reconnect after
-        return Math.min(options.attempt * 100, 3000);
       }
     });
 
+    // Setup event listeners
     redisClient.on('connect', () => {
       logger.info('✅ Redis connected successfully');
-      resolve();
     });
 
     redisClient.on('ready', () => {
@@ -50,10 +54,7 @@ const initRedis = async () => {
     });
 
     redisClient.on('error', (err) => {
-      logger.error('❌ Redis error:', err);
-      if (!redisClient.connected) {
-        reject(err);
-      }
+      logger.error('❌ Redis error:', err.message || err);
     });
 
     redisClient.on('reconnecting', () => {
@@ -63,14 +64,23 @@ const initRedis = async () => {
     redisClient.on('end', () => {
       logger.warn('⚠️  Redis connection closed');
     });
-  });
+
+    // Connect to Redis
+    await redisClient.connect();
+    logger.info('✅ Redis connection established');
+    
+  } catch (error) {
+    logger.error('❌ Failed to initialize Redis:', error.message);
+    throw error;
+  }
 };
 
 /**
  * Get Redis client instance
  */
 const getRedisClient = () => {
-  if (!redisClient || !redisClient.connected) {
+  if (!redisClient || !redisClient.isOpen) {
+    logger.error('Redis client not initialized or not connected');
     throw new Error('Redis client not initialized or not connected');
   }
   return redisClient;
@@ -79,9 +89,9 @@ const getRedisClient = () => {
 /**
  * Close Redis connection
  */
-const closeRedis = () => {
-  if (redisClient) {
-    redisClient.quit();
+const closeRedis = async () => {
+  if (redisClient && redisClient.isOpen) {
+    await redisClient.quit();
     logger.info('🔌 Redis connection closed');
   }
 };
@@ -90,7 +100,7 @@ const closeRedis = () => {
  * Check if Redis is connected
  */
 const isRedisConnected = () => {
-  return redisClient && redisClient.connected;
+  return redisClient && redisClient.isOpen;
 };
 
 module.exports = {
