@@ -24,7 +24,7 @@ class ActivityLogService {
       count: logs.length,
       agent: {
         id: agent.id,
-        fullName: `${agent.firstName} ${agent.lastName}`,
+        fullName: agent.fullName,
         email: agent.email
       }
     };

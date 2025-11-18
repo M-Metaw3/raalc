@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const agentShiftController = require('@controllers/agentShiftController');
 const shiftValidators = require('@validators/shiftValidators');
-const { authenticate } = require('@middleware/auth');
+const { authenticate, authorize } = require('@middleware/auth');
 
 /**
  * Agent Shift Management Routes
@@ -11,8 +11,9 @@ const { authenticate } = require('@middleware/auth');
  * Base path: /api/agents
  */
 
-// Apply authentication to all routes
+// Apply authentication and authorization to all routes
 router.use(authenticate);
+router.use(authorize('AGENT'));
 
 // Check-in/Check-out
 router.post(

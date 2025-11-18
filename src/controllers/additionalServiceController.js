@@ -27,6 +27,12 @@ class AdditionalServiceController {
    * Get all services
    * GET /api/additional-services
    */
+  /**
+   * Get all additional services
+   * GET /api/additional-services
+   * @query includeDeleted - Include soft deleted items (default: false)
+   * @query deletedOnly - Show only deleted items (default: false)
+   */
   async getAllServices(req, res, next) {
     try {
       const filters = {
@@ -37,6 +43,8 @@ class AdditionalServiceController {
         isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
         isFeatured: req.query.isFeatured !== undefined ? req.query.isFeatured === 'true' : undefined,
         isRequired: req.query.isRequired !== undefined ? req.query.isRequired === 'true' : undefined,
+        includeDeleted: req.query.includeDeleted === 'true',
+        deletedOnly: req.query.deletedOnly === 'true',
         minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
         maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
         orderBy: req.query.orderBy || 'order',

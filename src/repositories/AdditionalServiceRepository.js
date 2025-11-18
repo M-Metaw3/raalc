@@ -53,6 +53,8 @@ class AdditionalServiceRepository {
       isActive,
       isFeatured,
       isRequired,
+      includeDeleted = false,
+      deletedOnly = false,
       minPrice,
       maxPrice,
       orderBy = 'order',
@@ -62,8 +64,17 @@ class AdditionalServiceRepository {
     const skip = (page - 1) * limit;
     const queryBuilder = this.getRepository()
       .createQueryBuilder('service')
-      .leftJoinAndSelect('service.applicationType', 'type')
-      .where('service.deletedAt IS NULL');
+      .leftJoinAndSelect('service.applicationType', 'type');
+
+    // Handle deleted filter
+    if (deletedOnly) {
+      // Show only deleted items
+      queryBuilder.where('service.deletedAt IS NOT NULL');
+    } else if (!includeDeleted) {
+      // Default: exclude deleted items
+      queryBuilder.where('service.deletedAt IS NULL');
+    }
+    // If includeDeleted is true, no filter on deletedAt (show all)
 
     // Search
     if (search) {
@@ -105,7 +116,7 @@ class AdditionalServiceRepository {
     const total = await queryBuilder.getCount();
 
     // Order
-    const validOrderFields = ['order', 'name', 'price', 'createdAt', 'updatedAt'];
+    const validOrderFields = ['order', 'name', 'price', 'createdAt', 'updatedAt', 'deletedAt'];
     const orderField = validOrderFields.includes(orderBy) ? orderBy : 'order';
     queryBuilder.orderBy(`service.${orderField}`, orderDirection);
 
@@ -182,7 +193,10 @@ class AdditionalServiceRepository {
     await this.getRepository()
       .createQueryBuilder()
       .update()
-      .set({ deletedAt: new Date() })
+      .set({ 
+        deletedAt: new Date(),
+        isActive: false  // Deactivate service when deleted
+      })
       .where('id = :id', { id })
       .execute();
   }
@@ -194,7 +208,10 @@ class AdditionalServiceRepository {
     await this.getRepository()
       .createQueryBuilder()
       .update()
-      .set({ deletedAt: null })
+      .set({ 
+        deletedAt: null,
+        isActive: true  // Reactivate service when restored
+      })
       .where('id = :id', { id })
       .execute();
 

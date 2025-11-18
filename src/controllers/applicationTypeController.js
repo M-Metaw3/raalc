@@ -26,6 +26,8 @@ class ApplicationTypeController {
   /**
    * Get all application types
    * GET /api/application-types
+   * @query includeDeleted - Include soft deleted items (default: false)
+   * @query deletedOnly - Show only deleted items (default: false)
    */
   async getAllApplicationTypes(req, res, next) {
     try {
@@ -34,6 +36,8 @@ class ApplicationTypeController {
         limit: parseInt(req.query.limit) || 20,
         search: req.query.search || '',
         isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
+        includeDeleted: req.query.includeDeleted === 'true',
+        deletedOnly: req.query.deletedOnly === 'true',
         orderBy: req.query.orderBy || 'order',
         orderDirection: req.query.orderDirection || 'ASC'
       };

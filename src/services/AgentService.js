@@ -157,7 +157,34 @@ class AgentService {
       throw ErrorHandlers.notFound('errors.notFound');
     }
 
-    return { agent: { ...agent, userType: 'AGENT' } };
+    // Get department and shift details
+    let department = null;
+    let shift = null;
+
+    if (agent.departmentId) {
+      try {
+        department = await DepartmentRepository.findById(agent.departmentId);
+      } catch (error) {
+        logger.warn(`Failed to fetch department ${agent.departmentId}:`, error.message);
+      }
+    }
+
+    if (agent.shiftId) {
+      try {
+        shift = await ShiftRepository.findById(agent.shiftId);
+      } catch (error) {
+        logger.warn(`Failed to fetch shift ${agent.shiftId}:`, error.message);
+      }
+    }
+
+    return { 
+      agent: { 
+        ...agent, 
+        userType: 'AGENT',
+        department,
+        shift
+      } 
+    };
   }
 
   /**

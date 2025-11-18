@@ -55,14 +55,25 @@ class ApplicationTypeRepository {
       limit = 20,
       search = '',
       isActive,
+      includeDeleted = false,
+      deletedOnly = false,
       orderBy = 'order',
       orderDirection = 'ASC'
     } = filters;
 
     const skip = (page - 1) * limit;
     const queryBuilder = this.getRepository()
-      .createQueryBuilder('type')
-      .where('type.deletedAt IS NULL');
+      .createQueryBuilder('type');
+
+    // Handle deleted filter
+    if (deletedOnly) {
+      // Show only deleted items
+      queryBuilder.where('type.deletedAt IS NOT NULL');
+    } else if (!includeDeleted) {
+      // Default: exclude deleted items
+      queryBuilder.where('type.deletedAt IS NULL');
+    }
+    // If includeDeleted is true, no filter on deletedAt (show all)
 
     // Search
     if (search) {
@@ -81,7 +92,7 @@ class ApplicationTypeRepository {
     const total = await queryBuilder.getCount();
 
     // Order
-    const validOrderFields = ['order', 'name', 'createdAt', 'updatedAt'];
+    const validOrderFields = ['order', 'name', 'createdAt', 'updatedAt', 'deletedAt'];
     const orderField = validOrderFields.includes(orderBy) ? orderBy : 'order';
     queryBuilder.orderBy(`type.${orderField}`, orderDirection);
 
@@ -133,7 +144,10 @@ class ApplicationTypeRepository {
     await this.getRepository()
       .createQueryBuilder()
       .update()
-      .set({ deletedAt: new Date() })
+      .set({ 
+        deletedAt: new Date(),
+        isActive: false  // Deactivate application type when deleted
+      })
       .where('id = :id', { id })
       .execute();
   }
@@ -145,7 +159,10 @@ class ApplicationTypeRepository {
     await this.getRepository()
       .createQueryBuilder()
       .update()
-      .set({ deletedAt: null })
+      .set({ 
+        deletedAt: null,
+        isActive: true  // Reactivate application type when restored
+      })
       .where('id = :id', { id })
       .execute();
 

@@ -128,6 +128,13 @@ router.delete(
 );
 
 // ============================================
+// SHIFT MANAGEMENT ROUTES (MVP)
+// ============================================
+// Mount shift routes BEFORE admin routes to avoid conflicts
+const agentShiftRoutes = require('./agentShiftRoutes');
+router.use('/', agentShiftRoutes);
+
+// ============================================
 // ADMIN ONLY ROUTES
 // ============================================
 
@@ -291,16 +298,6 @@ router.patch(
   requirePermission('agents.feature'),
   agentController.toggleFeatured
 );
-
-// ============================================
-// SHIFT MANAGEMENT ROUTES (MVP)
-// ============================================
-
-// Import shift routes
-const agentShiftRoutes = require('./agentShiftRoutes');
-
-// Mount shift routes (they already have authentication)
-router.use('/', agentShiftRoutes);
 
 module.exports = router;
 
