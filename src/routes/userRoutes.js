@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require('@controllers/userController');
 const { authenticate, authorize } = require('@middleware/auth');
 const { validate } = require('@middleware/validation');
+const { requirePermission } = require('@middleware/rbac');
 const { wrapMulterUpload, logUpload } = require('@middleware/uploadHandler');
 const UploadService = require('@services/UploadService');
 const {
@@ -236,7 +237,7 @@ router.delete(
 /**
  * @route   GET /api/users/list
  * @desc    Get all users with filtering and pagination
- * @access  Private - Admin only
+ * @access  Private - Admin only with users.list permission
  * @query   isActive (optional) - Filter by active status (true/false)
  * @query   search (optional) - Search by name or email
  * @query   page (optional) - Page number (default: 1)
@@ -246,30 +247,33 @@ router.get(
   '/list',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('users.list'),
   userController.getAllUsers
 );
 
 /**
  * @route   POST /api/users/:userId/deactivate
  * @desc    Deactivate a user account
- * @access  Private - Admin only
+ * @access  Private - Admin only with users.deactivate permission
  */
 router.post(
   '/:userId/deactivate',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('users.deactivate'),
   userController.deactivateUser
 );
 
 /**
  * @route   POST /api/users/:userId/activate
  * @desc    Activate a user account
- * @access  Private - Admin only
+ * @access  Private - Admin only with users.activate permission
  */
 router.post(
   '/:userId/activate',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('users.activate'),
   userController.activateUser
 );
 

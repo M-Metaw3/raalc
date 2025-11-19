@@ -141,7 +141,7 @@ router.use('/', agentShiftRoutes);
 /**
  * @route   GET /api/agents/list
  * @desc    Get all agents with filtering and pagination
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.list permission
  * @query   isActive (optional) - Filter by active status (true/false)
  * @query   search (optional) - Search by name or email
  * @query   page (optional) - Page number (default: 1)
@@ -151,30 +151,33 @@ router.get(
   '/list',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.list'),
   agentController.getAllAgents
 );
 
 /**
  * @route   GET /api/agents/pending
  * @desc    Get all pending agent applications
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.list permission
  */
 router.get(
   '/pending',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.list'),
   agentController.getPendingAgents
 );
 
 /**
  * @route   POST /api/agents/:agentId/approve
  * @desc    Approve and activate an agent account
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.approve permission
  */
 router.post(
   '/:agentId/approve',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.approve'),
   approveAgentValidation,
   validate,
   agentController.approveAgent
@@ -198,12 +201,13 @@ router.post(
 /**
  * @route   POST /api/agents/:agentId/reject
  * @desc    Reject an agent application
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.reject permission
  */
 router.post(
   '/:agentId/reject',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.reject'),
   rejectAgentValidation,
   validate,
   agentController.rejectAgent
@@ -212,24 +216,26 @@ router.post(
 /**
  * @route   POST /api/agents/:agentId/deactivate
  * @desc    Deactivate an agent account
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.deactivate permission
  */
 router.post(
   '/:agentId/deactivate',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.deactivate'),
   agentController.deactivateAgent
 );
 
 /**
  * @route   POST /api/agents/:agentId/activate
  * @desc    Activate an agent account
- * @access  Private - Admin only
+ * @access  Private - Admin only with agents.activate permission
  */
 router.post(
   '/:agentId/activate',
   authenticate,
   authorize('ADMIN'),
+  requirePermission('agents.activate'),
   agentController.activateAgent
 );
 
