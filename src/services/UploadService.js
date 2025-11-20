@@ -395,6 +395,86 @@ class UploadService {
       }
     }).array(fieldName, maxFiles);
   }
+
+  /**
+   * Upload multiple files for complaints (supports anonymous users)
+   * @param {string} fieldName - Form field name (default: 'attachments')
+   * @param {number} maxCount - Maximum number of files (default: 5)
+   * @returns {multer} Multer instance
+   */
+  uploadComplaintAttachments(fieldName = 'attachments', maxCount = 5) {
+    const maxFiles = maxCount || 5;
+    const maxSize = parseInt(process.env.MAX_COMPLAINT_FILE_SIZE) || 10 * 1024 * 1024; // 10MB default
+
+    // Allowed types: images and documents
+    const allowedTypes = [
+      ...this.allowedImageTypes,
+      ...this.allowedDocumentTypes
+    ];
+
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        try {
+          // Create complaints folder
+          const folderPath = path.join(this.baseUploadDir, 'complaints');
+          
+          // Create folder if it doesn't exist
+          if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+            logger.info(`Created complaints upload folder: ${folderPath}`);
+          }
+          
+          cb(null, folderPath);
+        } catch (error) {
+          logger.error('Error creating complaints folder:', error);
+          cb(error);
+        }
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+        const ext = path.extname(file.originalname);
+        const baseName = path.basename(file.originalname, ext)
+          .replace(/[^a-zA-Z0-9]/g, '_')
+          .substring(0, 50);
+        cb(null, `complaint_${baseName}_${uniqueSuffix}${ext}`);
+      }
+    });
+
+    const fileFilter = (req, file, cb) => {
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`File type ${file.mimetype} not allowed. Allowed types: ${allowedTypes.join(', ')}`), false);
+      }
+    };
+
+    return multer({
+      storage,
+      fileFilter,
+      limits: {
+        fileSize: maxSize,
+        files: maxFiles
+      }
+    }).array(fieldName, maxFiles);
+  }
+
+  /**
+   * Generate file URLs from uploaded files
+   * @param {Array} files - Array of multer file objects
+   * @returns {Array} Array of file URLs
+   */
+  generateFileUrls(files) {
+    if (!files || files.length === 0) {
+      return [];
+    }
+
+    const baseUrl = process.env.APP_URL || 'http://localhost:4000';
+    return files.map(file => {
+      // Convert Windows path to URL path
+      const urlPath = file.path.replace(/\\/g, '/');
+      return `${baseUrl}/${urlPath}`;
+    });
+  }
 }
 
 module.exports = new UploadService();
