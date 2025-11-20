@@ -22,15 +22,16 @@ const Shift = require('../models/Shift');
 const User = require('../models/User');
 const UserDocument = require('../models/UserDocument');
 // Chat System Models
-const Chat = require('../models/Chat');
+// const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const MessageAttachment = require('../models/MessageAttachment');
 module.exports = {
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT) || 3306,
-  username: process.env.DB_USER || 'raalc2026',
+  // username: process.env.DB_USER || 'raalc2026',
   // username: process.env.DB_USER || 'root',
+  username: process.env.DB_USER || 'raalc2026',
   password: process.env.DB_PASSWORD || 'Secur3P@ssw0rd!',
   // password: process.env.DB_PASSWORD || '',
   // password: process.env.DB_PASSWORD || '',
@@ -62,7 +63,7 @@ synchronize: true, // ⚠️ Disabled temporarily to fix FK error
     User,
     UserDocument,
     // Chat System
-    Chat,
+    // Chat,
     Message,
     Complaint,
     MessageAttachment
