@@ -23,8 +23,8 @@ const User = require('../models/User');
 const UserDocument = require('../models/UserDocument');
 // Chat System Models
 // const Chat = require('../models/Chat');
-const Message = require('../models/Message');
-const MessageAttachment = require('../models/MessageAttachment');
+// const Message = require('../models/Message');
+// const MessageAttachment = require('../models/MessageAttachment');
 module.exports = {
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
@@ -64,9 +64,9 @@ synchronize: true, // ⚠️ Disabled temporarily to fix FK error
     UserDocument,
     // Chat System
     // Chat,
-    Message,
+    // Message,
     Complaint,
-    MessageAttachment
+    // MessageAttachment
   ],
   migrations: ['src/migrations/**/*.js'],
   synchronize: false, // ⚠️ Disabled temporarily to fix FK error
