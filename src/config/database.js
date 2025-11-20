@@ -9,6 +9,7 @@ const ApplicationType = require('../models/ApplicationType');
 const Approval = require('../models/Approval');
 const BreakPolicy = require('../models/BreakPolicy');
 const BreakRequest = require('../models/BreakRequest');
+const Complaint = require('../models/Complaint');
 const Department = require('../models/Department');
 const Permission = require('../models/Permission');
 const Report = require('../models/Report');
@@ -20,7 +21,10 @@ const ServiceRequest = require('../models/ServiceRequest');
 const Shift = require('../models/Shift');
 const User = require('../models/User');
 const UserDocument = require('../models/UserDocument');
-
+// Chat System Models
+const Chat = require('../models/Chat');
+const Message = require('../models/Message');
+const MessageAttachment = require('../models/MessageAttachment');
 module.exports = {
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
@@ -29,8 +33,10 @@ module.exports = {
   // username: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'Secur3P@ssw0rd!',
   // password: process.env.DB_PASSWORD || '',
-
+  // password: process.env.DB_PASSWORD || '',
+synchronize: true, // ⚠️ Disabled temporarily to fix FK error
   database: process.env.DB_NAME || 'raalc2026',
+  // database: process.env.DB_NAME || 'raalc_db',
   // database: process.env.DB_NAME || 'raalc_db',
   entities: [
     ActivityLog,
@@ -43,6 +49,7 @@ module.exports = {
     Approval,
     BreakPolicy,
     BreakRequest,
+    Complaint,
     Department,
     Permission,
     Report,
@@ -53,10 +60,15 @@ module.exports = {
     ServiceRequest,
     Shift,
     User,
-    UserDocument
+    UserDocument,
+    // Chat System
+    Chat,
+    Message,
+    Complaint,
+    MessageAttachment
   ],
   migrations: ['src/migrations/**/*.js'],
-  synchronize: process.env.NODE_ENV !== 'production', // Never in production!
+  synchronize: false, // ⚠️ Disabled temporarily to fix FK error
   dropSchema: process.env.DB_DROP_SCHEMA === 'true', // DANGER: Drops all tables on start
   logging: process.env.DB_LOGGING === 'true',
   timezone: 'Z',

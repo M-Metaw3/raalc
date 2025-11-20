@@ -13,6 +13,7 @@ const additionalServiceRoutes = require('./additionalServiceRoutes');
 const serviceRequestRoutes = require('./serviceRequestRoutes');
 // const chatRoutes = require('./chatRoutes');
 const callbackRoutes = require('./callbackRoutes');
+const complaintRoutes = require('./complaintRoutes');
 
 // Register routes
 router.use('/admins', adminRoutes);
@@ -26,6 +27,7 @@ router.use('/additional-services', additionalServiceRoutes);
 router.use('/service-requests', serviceRequestRoutes);
 // router.use('/chats', chatRoutes);
 router.use('/callback', callbackRoutes);
+router.use('/complaints', complaintRoutes);
 
 // API version info
 router.get('/', (req, res) => {
